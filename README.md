@@ -113,8 +113,8 @@ in `vendor/backdrops/COMMIT`. Upstream's terms are in `vendor/backdrops/LICENSE`
 
 - The hands are @samdape's artwork, used upstream with permission. All rights stay with the artist.
 - The forearms past the artwork's edges are upstream's extension, traced from the public-domain fresco.
-- You may use the theme for yourself. You may not redistribute the picture outside upstream's repository, sell it,
-  or remove the credits, without permission.
+- Anyone may use the theme for free, for any purpose. Nobody may redistribute the picture outside upstream's
+  repository, sell it, or remove the credits, without permission.
 
 `theme.json` contains the picture, so those terms cover it. Ask neverblinks and @samdape before you make this
 repository public or pass `theme.json` on.
