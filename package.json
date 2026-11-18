@@ -1,0 +1,14 @@
+{
+  "name": "t3code-reaching",
+  "version": "1.0.0",
+  "description": "Reaching: the Backdrops scene by neverblinks and @samdape as a theme for T3 Code",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node check.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.65.1"
+  }
+}
