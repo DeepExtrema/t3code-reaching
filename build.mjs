@@ -13,9 +13,18 @@ const HERE = new URL(".", import.meta.url).pathname;
 // Upstream keeps the chat readable with the Claude app's glass (black at 0.72, no blur, flat over the text column
 // and fading out beside it) plus a limiter in the picture that caps the dots behind the text, so the brightest
 // reads #3f3f3f. LANE is both in one, in T3 Code's chat area: black at 0.74 leaves the brightest dot at #3f3f3f.
-// It is flat over the chat's text column plus `pad` on each side, then takes `fade` to clear.
-export const LANE = { tint: "0 0 0", opacity: 0.74, pad: "1rem", fade: "13rem" };
-export const PANEL_ALPHA = 0.86;      // sidebar and header: black at this opacity over the picture
+// It is flat over the chat's text column plus `pad` on each side, then takes `fade` to clear. While the sidebar is
+// open the lane stays flat on the left, up to the sidebar, and its right fade shortens (to no less than `minFade`)
+// so that it ends where it ends with the sidebar closed.
+export const LANE = { tint: "0 0 0", opacity: 0.74, pad: "1rem", fade: "13rem", minFade: "3rem" };
+export const HEADER_ALPHA = 0.86;     // header: black at this opacity over the picture
+// Frosted glass: a tint over the blurred picture. In T3 Code 0.1.11 the blur shows behind the sidebar and the
+// composer but not behind the user's message bubbles, so those carry `grain`, white noise at that opacity.
+export const GLASS = {
+  sidebar: { tint: "14 14 16", opacity: 0.24, blur: "20px" },
+  composer: { from: "16 16 18 / .62", to: "10 10 12 / .6", blur: "20px" },
+  bubble: { from: "30 30 32 / .6", to: "18 18 20 / .55", blur: "14px", grain: 0.03 },
+};
 export const APP_ZOOM = 1.2 ** 1.5;   // the Claude app's zoom. Upstream's edge fade is in its CSS px; T3 Code has none
 
 // ---- the scene, in fewer characters ---------------------------------------------------------------------------------
@@ -135,17 +144,43 @@ export function backdropCss(svg) {
 
 function panelCss() {
   const lane = (a) => `rgb(${LANE.tint} / ${a})`;
-  // a smoothstep, as upstream's glass fades: 0 at the lane's edge to 1 at `fade` beyond it
-  const steps = [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1].map((u) => [u, 1 - u * u * (3 - 2 * u)]);
-  const side = (sign) => steps.map(([u, k]) => `${lane(short(LANE.opacity * k, 3))} calc(var(--rc-mid) ${sign} (var(--rc-half)${u ? ` + ${LANE.fade} * ${u}` : ""}))`);
-  const stops = [...side("-").reverse(), ...side("+")].join(",");
+  const full = short(LANE.opacity, 3);
+  // a smoothstep, as upstream's glass fades: [distance past the lane's edge as a share of the fade, opacity lost there]
+  const steps = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1].map((u) => [short(u, 3), LANE.opacity * u * u * (3 - 2 * u)]);
+  const past = (sign, dist) => `calc(var(--rc-mid) ${sign} (var(--rc-half) + ${dist}))`;
+  // --rc-lf scales what the left side loses (0 keeps it flat to the edge); --rc-fr is the length of the right fade
+  const left = steps.map(([u, lost]) => `${lane(`calc(${full} - ${short(lost, 3)} * var(--rc-lf))`)} ${past("-", `${LANE.fade} * ${u}`)}`).reverse();
+  const right = steps.map(([u, lost]) => `${lane(short(LANE.opacity - lost, 3))} ${past("+", `var(--rc-fr) * ${u}`)}`);
+  const stops = [...left, `${lane(full)} calc(var(--rc-mid) - var(--rc-half))`, `${lane(full)} calc(var(--rc-mid) + var(--rc-half))`, ...right].join(",");
+  const conversation = `[data-workspace-area="conversation"]`;
+  const { sidebar, composer, bubble } = GLASS;
+  const blur = (b) => `-webkit-backdrop-filter:${b};backdrop-filter:${b}`;
+  const grain = dataUri(`<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/>` +
+    `<feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 ${short(bubble.grain, 3)} 0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>`);
   return BACKDROP_MARK +
     // the app's own full-window boxes are let through, so the one picture shows behind all of them
     `[data-slot="sidebar-wrapper"],[data-slot="sidebar"],[data-slot="sidebar-inset"],div:has(>[data-chat-column]),[data-chat-column],.messages-timeline-scroll,[data-timeline-loading]{background:transparent!important}` +
     // The lane sits where T3 Code puts the chat's text column: the app centres it between two insets (the right one
     // makes room for the thread details card) and publishes them, and the column's width, as these variables.
-    `[data-workspace-area="conversation"]{--rc-mid:calc(50% + (var(--chat-lane-inset-start,0px) - var(--chat-lane-inset-end,0px)) / 2);--rc-half:calc(var(--chat-content-max-width,46rem) / 2 + ${LANE.pad});background:linear-gradient(90deg,${stops})!important}` +
-    `[data-slot="sidebar-inner"],[data-chat-header]{background-color:rgb(0 0 0 / ${PANEL_ALPHA})!important}`;
+    `${conversation}{--rc-mid:calc(50% + (var(--chat-lane-inset-start,0px) - var(--chat-lane-inset-end,0px)) / 2);--rc-half:calc(var(--chat-content-max-width,46rem) / 2 + ${LANE.pad});--rc-lf:1;--rc-fr:${LANE.fade};background:linear-gradient(90deg,${stops})!important}` +
+    // An open sidebar moves the column right by half its width (16rem until the user resizes it), so the right fade
+    // gives that much back. Below 768px the sidebar is a sheet over the chat and moves nothing.
+    `@media (min-width:768px){[data-slot="sidebar-wrapper"][data-sidebar-state="expanded"] ${conversation}{--rc-lf:0;--rc-fr:max(${LANE.minFade},calc(${LANE.fade} - var(--sidebar-width,16rem) / 2))}}` +
+    `[data-chat-header]{background-color:rgb(0 0 0 / ${HEADER_ALPHA})!important}` +
+    `[data-user-message-bubble]{${blur(`blur(${bubble.blur})`)};background:${grain} 0 0/160px 160px,radial-gradient(at 0 0,rgb(255 255 255 / .025),transparent 70%),linear-gradient(155deg,rgb(${bubble.from}),rgb(${bubble.to}))!important;` +
+      `border:1px solid rgb(255 255 255 / .12)!important;border-radius:16px;box-shadow:0 12px 24px -12px rgb(0 0 0 / .87),0 4px 7px -4px rgb(0 0 0 / .67),inset 0 1px rgb(255 255 255 / .07),inset 0 -1px rgb(0 0 0 / .33);color:#ececec!important}` +
+    `[data-slot="sidebar-inner"]{${blur(`blur(${sidebar.blur}) saturate(120%)`)};background:linear-gradient(180deg,rgb(255 255 255 / .035),transparent 40%),rgb(${sidebar.tint} / ${short(sidebar.opacity, 3)})!important;` +
+      `border-right:1px solid rgb(255 255 255 / .08);box-shadow:inset -1px 0 rgb(255 255 255 / .03)}` +
+    // the composer: T3 Code's own glass layers (its ::before, its outline) are switched off, so only this one shows
+    `[data-slot="composer-shell"]{--chat-composer-glass-surface:transparent!important;--chat-composer-outline:transparent!important;--chat-composer-highlight:rgb(255 255 255 / .06)!important}` +
+    `[data-slot="composer-shell"]::before,[data-slot="composer-host"]::before{background:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}` +
+    `[data-slot="composer-host"]{${blur(`blur(${composer.blur})`)};background:linear-gradient(165deg,rgb(${composer.from}),rgb(${composer.to}) 85%)!important;border:1px solid transparent!important;border-radius:18px;` +
+      `transition:border-color .18s,box-shadow .18s;box-shadow:0 20px 36px -16px rgb(0 0 0 / .87),0 6px 10px -5px rgb(0 0 0 / .7),inset 0 1px rgb(255 255 255 / .08),inset 0 -1px rgb(0 0 0 / .5)}` +
+    `[data-slot="composer-host"]::after{box-shadow:none!important;border-color:transparent!important}` +
+    `[data-slot="composer-host"]:focus-within{border-color:transparent!important;box-shadow:0 22px 38px -16px rgb(0 0 0 / .87),0 0 24px -12px rgb(255 255 255 / .18),inset 0 1px rgb(255 255 255 / .1),inset 0 -1px rgb(0 0 0 / .5)}` +
+    `@media (prefers-reduced-motion:reduce){[data-slot="composer-host"]{transition:none!important}}` +
+    // T3 Code's 1px border beside the sidebar is clear, so the picture showed through it as a bright line
+    `[data-slot="sidebar-container"]{border-right-width:0!important;border-left-width:0!important}`;
 }
 
 // ---- theme ------------------------------------------------------------------------------------------------------

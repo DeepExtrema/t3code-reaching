@@ -145,8 +145,11 @@ try {
 // ---- 5. T3 Code itself: are the parts the theme hooks into still in the installed app? ------------------------------------
 const HOOKS = [
   ["chat area", "data-workspace-area"], ["chat column", "data-chat-column"], ["chat scroller", "messages-timeline-scroll"], ["chat loading state", "data-timeline-loading"],
-  ["sidebar", "sidebar-inner"], ["sidebar frame", "sidebar-wrapper"], ["main area", "sidebar-inset"], ["header", "data-chat-header"],
+  ["sidebar", "sidebar-inner"], ["sidebar frame", "sidebar-wrapper"], ["sidebar border", "sidebar-container"], ["main area", "sidebar-inset"], ["header", "data-chat-header"],
   ["reading lane: left inset", "--chat-lane-inset-start"], ["reading lane: right inset", "--chat-lane-inset-end"], ["reading lane: column width", "--chat-content-max-width"],
+  ["reading lane: sidebar open or closed", "data-sidebar-state"], ["reading lane: sidebar width", "--sidebar-width"],
+  ["your message bubble", "data-user-message-bubble"], ["composer", "composer-host"], ["composer frame", "composer-shell"],
+  ["composer: T3 Code's glass", "--chat-composer-glass-surface"], ["composer: T3 Code's outline", "--chat-composer-outline"], ["composer: T3 Code's highlight", "--chat-composer-highlight"],
 ];
 const asar = process.env.T3_APP_ASAR ?? fs.readdirSync("/tmp").filter((d) => d.startsWith(".mount_T3-Cod")).map((d) => `/tmp/${d}/resources/app.asar`).find((f) => fs.existsSync(f));
 if (!asar) console.log("SKIP  T3 Code not found, so its hooks were not checked: set T3_APP_ASAR to its app.asar");

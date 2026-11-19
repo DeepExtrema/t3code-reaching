@@ -15,7 +15,8 @@ Read [Credits and licence](#credits-and-licence) before you share it or make it 
 
 ![A reply with a code block, the wave on the right hand](media/thread.png)
 
-The screenshots show T3 Code with an invented demo project.
+The screenshots show T3 Code with an invented demo project. They are older than the frosted sidebar, composer and
+message bubbles, which they do not show.
 
 ## Install
 
@@ -32,16 +33,19 @@ cp theme.json ~/.t3/userdata/themes/reaching.json
 
 To go back, pick another theme on the same page.
 
-Tested on T3 Code 0.1.11-nightly.20261118, in the web client in Chromium.
+Tested on T3 Code 0.1.11-nightly.20261118, in the web client in Chromium and in the desktop app on macOS.
 
 ## What the theme changes
 
 - **Backdrop.** Upstream's picture fills the window, behind the sidebar, the header and the chat.
 - **Colours.** Upstream's Reaching palette: black surfaces, white text, a grey accent, colour for errors and warnings only.
-- **Reading lane.** The picture is dimmed with black at 74 % behind the chat's text column, and clears over 13 rem on each side. The brightest dot behind text reads `#3f3f3f`, the same as upstream.
-- **Sidebar and header.** Black at 86 %, so the picture shows through faintly.
+- **Reading lane.** The picture is dimmed with black at 74 % behind the chat's text column, and clears over 13 rem on each side. The brightest dot behind text reads `#3f3f3f`, the same as upstream. While the sidebar is open, the lane stays dark on the left up to the sidebar, and its right fade shortens so that it ends at the same place in the window as with the sidebar closed.
+- **Sidebar.** Frosted glass: the picture blurred by 20 px under a dark tint at 24 %.
+- **Header.** Black at 86 %, so the picture shows through faintly.
+- **Composer.** Frosted glass: the picture blurred by 20 px under a dark tint at about 60 %, with no outline.
+- **Your messages.** A dark tint at about 60 % with a faint grain and a thin light border. The theme also asks for a 14 px blur, which T3 Code 0.1.11 does not draw behind message bubbles.
 
-The chat's layout, message rows, composer and code blocks are T3 Code's own.
+The chat's layout, the assistant's replies and code blocks are T3 Code's own.
 
 ## What moves
 
@@ -59,7 +63,12 @@ The theme is generated. Edit the constants at the top of `build.mjs`, then build
 | `LANE.opacity` | How dark the lane behind the chat text is | `0.74` |
 | `LANE.pad` | How far the full dimming reaches past the text column on each side | `1rem` |
 | `LANE.fade` | How far the lane takes to clear on each side | `13rem` |
-| `PANEL_ALPHA` | Opacity of the black behind the sidebar and the header | `0.86` |
+| `LANE.minFade` | The shortest the right fade gets while the sidebar is open | `3rem` |
+| `HEADER_ALPHA` | Opacity of the black behind the header | `0.86` |
+| `GLASS.sidebar.opacity` | Opacity of the sidebar's tint over the blurred picture | `0.24` |
+| `GLASS.composer.from`, `.to` | The composer's tint from left to right, as `r g b / opacity` | `16 16 18 / .62`, `10 10 12 / .6` |
+| `GLASS.bubble.from`, `.to` | The tint of your message bubbles from left to right | `30 30 32 / .6`, `18 18 20 / .55` |
+| `GLASS.bubble.grain` | Opacity of the white noise on your message bubbles | `0.03` |
 
 ## Build from source
 
@@ -99,10 +108,12 @@ If upstream changed how it writes the scene, the build stops with a message that
 
 ## Limits
 
-- **Size.** The theme uses 71,743 of T3 Code's 100,000 characters of CSS.
-- **Internal names.** The reading lane follows the chat column through three CSS variables T3 Code sets, and the
-  backdrop shows through boxes T3 Code's theme guide does not list as stable. A T3 Code update can rename one.
-  The lane then centres on the chat area, or a box turns solid again. `node check.mjs` reports which names are missing.
+- **Size.** The theme uses 74,634 of T3 Code's 100,000 characters of CSS.
+- **Internal names.** The reading lane follows the chat column through three CSS variables T3 Code sets, and reads
+  the sidebar's state and width from two more names. The backdrop shows through boxes, and the glass uses parts of
+  the composer and the sidebar, that T3 Code's theme guide does not list as stable. A T3 Code update can rename one.
+  The lane then centres on the chat area or ignores the sidebar, a box turns solid again, or a part loses its glass.
+  `node check.mjs` reports which names are missing.
 - **Dark only.** The theme defines a dark appearance.
 - **Mobile.** T3 Code's theme guide says its mobile apps do not use themes.
 
