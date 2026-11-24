@@ -23,8 +23,8 @@ From `ARTWORK.md`, for Reaching:
 - Without permission, nobody may sell the pictures or anything made from them, redistribute them outside
   upstream's repository, claim them as their own, or remove or hide the credits.
 
-The scene file and `theme.json` both contain the picture. This repository is private for that reason.
-Before you make it public or pass `theme.json` on, ask neverblinks, and ask @samdape for the hands.
+The scene file and `theme.json` both contain the picture. This repository publishes them with permission from
+neverblinks, and from @samdape for the hands. Before you copy the picture anywhere else, ask them.
 
 ## This repository's own code
 

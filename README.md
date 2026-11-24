@@ -6,8 +6,8 @@ Michelangelo's fresco. Every 7.5 seconds one wave crosses from arm to arm and tu
 
 ![The wave crossing the hands behind a T3 Code thread](media/wave.gif)
 
-The artwork is by @samdape and is not free to redistribute. This repository is private.
-Read [Credits and licence](#credits-and-licence) before you share it or make it public.
+The artwork is by @samdape. This repository publishes it with permission from @samdape and neverblinks.
+Read [Credits and licence](#credits-and-licence) before you copy the picture anywhere else.
 
 ## Screenshots
 
@@ -127,8 +127,8 @@ in `vendor/backdrops/COMMIT`. Upstream's terms are in `vendor/backdrops/LICENSE`
 - Anyone may use the theme for free, for any purpose. Nobody may redistribute the picture outside upstream's
   repository, sell it, or remove the credits, without permission.
 
-`theme.json` contains the picture, so those terms cover it. Ask neverblinks and @samdape before you make this
-repository public or pass `theme.json` on.
+`theme.json` contains the picture, so those terms cover it. This repository publishes it with permission from
+neverblinks and @samdape. Ask them before you copy the picture anywhere else.
 
 `build.mjs` and `check.mjs` are under the [MIT License](LICENSE). [NOTICE.md](NOTICE.md) has the details.
 
