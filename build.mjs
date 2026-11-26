@@ -160,6 +160,10 @@ function panelCss() {
   return BACKDROP_MARK +
     // the app's own full-window boxes are let through, so the one picture shows behind all of them
     `[data-slot="sidebar-wrapper"],[data-slot="sidebar"],[data-slot="sidebar-inset"],div:has(>[data-chat-column]),[data-chat-column],.messages-timeline-scroll,[data-timeline-loading]{background:transparent!important}` +
+    // T3 Code parks a preview tab an agent is using at the window's top left, one layer under the app, and counts on
+    // the boxes above being opaque to hide it. They no longer are, so the tab goes under the picture, canvas over it.
+    `[data-preview-rendering=active][style*="z-index: -1"]{z-index:-9!important}` +
+    `[data-preview-rendering=active][style*="z-index: -1"]::after{content:"";position:absolute;inset:0;background:#000}` +
     // The lane sits where T3 Code puts the chat's text column: the app centres it between two insets (the right one
     // makes room for the thread details card) and publishes them, and the column's width, as these variables.
     `${conversation}{--rc-mid:calc(50% + (var(--chat-lane-inset-start,0px) - var(--chat-lane-inset-end,0px)) / 2);--rc-half:calc(var(--chat-content-max-width,46rem) / 2 + ${LANE.pad});--rc-lf:1;--rc-fr:${LANE.fade};background:linear-gradient(90deg,${stops})!important}` +
